@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "*.tpl": "html",
+    "raylib.h": "c",
+    "stdio.h": "c",
+    "__verbose_abort": "c",
+    "cstdio": "c",
+    "typeinfo": "c"
+  }
+}
