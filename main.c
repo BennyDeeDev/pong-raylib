@@ -1,5 +1,15 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+Rectangle RectanglePosToRectangle(Vector2 rectanglePos, int rectangleWidth, int rectangleHeight)
+{
+    return (Rectangle){rectanglePos.x,
+                       rectanglePos.y,
+                       rectangleWidth,
+                       rectangleHeight};
+}
 
 int main(void)
 {
@@ -63,9 +73,25 @@ int main(void)
             rectangleLeftPos.y = rectangleLeftPos.y + moveY;
         }
 
+        if (IsKeyPressed(KEY_UP))
+        {
+            rectangleRightPos.y = rectangleRightPos.y - moveY;
+        }
+        else if (IsKeyPressed(KEY_DOWN))
+        {
+            rectangleRightPos.y = rectangleRightPos.y + moveY;
+        }
+
         if (IsKeyPressed(KEY_SPACE) && !isGameStarted)
         {
             isGameStarted = true;
+
+            srand(time(NULL));
+
+            if (rand() % 2 == 0)
+            {
+                ballVelocity.x = -ballVelocity.x;
+            }
         }
 
         if (isGameStarted)
@@ -96,6 +122,11 @@ int main(void)
         else if (ballPos.y >= screenHeight)
         {
             ballVelocity.y = -ballVelocity.y;
+        }
+        else if (CheckCollisionCircleRec(ballPos, ballRadius, RectanglePosToRectangle(rectangleLeftPos, rectangleWidth, rectangleHeight)) ||
+                 CheckCollisionCircleRec(ballPos, ballRadius, RectanglePosToRectangle(rectangleRightPos, rectangleWidth, rectangleHeight)))
+        {
+            ballVelocity.x = -ballVelocity.x;
         }
 
         DrawRectangle(rectangleLeftPos.x, rectangleLeftPos.y, rectangleWidth, rectangleHeight, rectangleColor);
