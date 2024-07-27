@@ -12,16 +12,19 @@ int main(void)
     const int screenHeightCenter = 720 / 2;
     const int rectangleWidth = 14;
     const int rectangleHeight = 64;
-    const int paddingX = 40;
+    const int paddingX = 48;
     const int moveY = rectangleHeight / 2;
     const int ballRadius = 8;
+    const float ballSpeed = 80;
 
     const Color rectangleColor = LIME;
     const Color ballColor = PURPLE;
 
     Vector2 rectangleLeftPos = {paddingX, screenHeightCenter - (rectangleHeight / 2)};
-    Vector2 ballPos = {paddingX + rectangleWidth + ballRadius, screenHeightCenter};
+    Vector2 ballPos = {screenWidthCenter, screenHeightCenter};
     Vector2 rectangleRightPos = {screenWidth - paddingX - rectangleWidth, screenHeightCenter - (rectangleHeight / 2)};
+    Vector2 ballVelocity = {4, 4};
+    bool isGameStarted = false;
 
     while (!WindowShouldClose())
     {
@@ -37,9 +40,41 @@ int main(void)
         {
             rectangleLeftPos.y = rectangleLeftPos.y + moveY;
         }
-        else if (IsKeyPressed(KEY_SPACE))
+
+        if (IsKeyPressed(KEY_SPACE) && !isGameStarted)
         {
-                }
+            isGameStarted = true;
+        }
+
+        if (isGameStarted)
+        {
+            ballPos.x = ballPos.x + ballVelocity.x;
+            ballPos.y = ballPos.y + ballVelocity.y;
+        }
+        else
+        {
+            ballPos.x = screenWidthCenter;
+            ballPos.y = screenHeightCenter;
+        }
+
+        if (ballPos.x <= 0)
+        {
+            // Ball has passed the left boundary (possibly a score event)
+            isGameStarted = false;
+        }
+        else if (ballPos.x >= 1280)
+        {
+            // Ball has passed the right boundary (possibly a score event)
+            isGameStarted = false;
+        }
+        else if (ballPos.y <= 0)
+        {
+            ballVelocity.y = -ballVelocity.y;
+        }
+        else if (ballPos.y >= 720)
+        {
+            ballVelocity.y = -ballVelocity.y;
+        }
 
         DrawRectangle(rectangleLeftPos.x, rectangleLeftPos.y, rectangleWidth, rectangleHeight, rectangleColor);
 
