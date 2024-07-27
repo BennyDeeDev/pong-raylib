@@ -27,7 +27,7 @@ int main(void)
 
     const int paddingX = 48;
     const int paddingY = 48;
-    const int moveY = 4;
+    const int moveSpeed = 4;
 
     const Color rectangleColor = LIME;
     const Color ballColor = PURPLE;
@@ -49,8 +49,8 @@ int main(void)
     int winner = 0;
 
     char winnerText[50];
-    int fontSizeWinner = 48;
-    int paddingYWinner = 128;
+    const int fontSizeWinner = 48;
+    const int paddingYWinner = 128;
     const Color winnerColor = GOLD;
 
     int leftPlayerScore = 0;
@@ -59,19 +59,20 @@ int main(void)
     char rightPlayerScoreText[10];
 
     char *spacebarText = "Press Spacebar to play!";
-    int fontSizeSpacebar = 36;
-    int paddingYSpacebar = 256;
+    const int fontSizeSpacebar = 36;
+    const int paddingYSpacebar = 256;
 
-    int fontSizeScore = 36;
-    int paddingXScore = 64;
+    const int fontSizeScore = 36;
+    const int paddingXScore = 64;
     Vector2 leftPlayerScorePos = {paddingX + paddingXScore, paddingY};
     Vector2 rightPlayerScorePos = {screenWidth - paddingX - paddingXScore, paddingY};
-    int scoreMax = 11;
+    const int scoreMax = 11;
+
+    srand(time(NULL));
 
     while (!WindowShouldClose())
     {
         BeginDrawing();
-
         ClearBackground(BLACK);
 
         if (leftPlayerScore >= scoreMax || rightPlayerScore >= scoreMax)
@@ -80,97 +81,97 @@ int main(void)
             // TODO: Don't set it to 0 so you can see the Score when someone wins
             leftPlayerScore = 0;
             rightPlayerScore = 0;
-
             winner = leftPlayerScore >= scoreMax ? 1 : 2;
         }
 
+        // Move left paddle
         if (IsKeyDown(KEY_W) && rectangleLeftPos.y >= 0)
         {
-            rectangleLeftPos.y = rectangleLeftPos.y - moveY;
+            rectangleLeftPos.y -= moveSpeed;
         }
         else if (IsKeyDown(KEY_S) && rectangleLeftPos.y <= screenHeight - rectangleHeight)
         {
-            rectangleLeftPos.y = rectangleLeftPos.y + moveY;
+            rectangleLeftPos.y += moveSpeed;
         }
 
+        // Move right paddle
         if (IsKeyDown(KEY_UP) && rectangleRightPos.y >= 0)
         {
-            rectangleRightPos.y = rectangleRightPos.y - moveY;
+            rectangleRightPos.y -= moveSpeed;
         }
         else if (IsKeyDown(KEY_DOWN) && rectangleRightPos.y <= screenHeight - rectangleHeight)
         {
-            rectangleRightPos.y = rectangleRightPos.y + moveY;
+            rectangleRightPos.y += moveSpeed;
         }
 
+        // Start game
         if (IsKeyPressed(KEY_SPACE) && !didGameStart)
         {
             didGameStart = true;
             winner = 0;
-
-            srand(time(NULL));
-
-            if (rand() % 2 == 0)
-            {
-                ballVelocity.x = -ballVelocity.x;
-            }
+            ballVelocity.x = ballSpeed * (rand() % 2 == 0 ? 1 : -1);
+            ballVelocity.y = ballSpeed;
         }
 
+        // Update ball position if the game has started
         if (didGameStart)
         {
-            ballPos.x = ballPos.x + ballVelocity.x;
-            ballPos.y = ballPos.y + ballVelocity.y;
+            ballPos.x += ballVelocity.x;
+            ballPos.y += ballVelocity.y;
         }
         else
         {
-            ballPos.x = screenWidthCenter;
-            ballPos.y = screenHeightCenter;
+            ballPos = (Vector2){screenWidthCenter, screenHeightCenter};
         }
 
+        // Ball collision with left or right wall
         if (ballPos.x <= 0)
         {
-            rightPlayerScore = rightPlayerScore + 1;
+            rightPlayerScore++;
             didGameStart = false;
+            ballVelocity.x = ballSpeed;
         }
         else if (ballPos.x >= screenWidth)
         {
-            leftPlayerScore = leftPlayerScore + 1;
+            leftPlayerScore++;
             didGameStart = false;
+            ballVelocity.x = ballSpeed;
         }
-        else if (ballPos.y <= 0)
+
+        // Ball collision with top or bottom wall
+        if (ballPos.y <= 0 || ballPos.y >= screenHeight)
         {
             ballVelocity.y = -ballVelocity.y;
         }
-        else if (ballPos.y >= screenHeight)
-        {
-            ballVelocity.y = -ballVelocity.y;
-        }
-        else if (CheckCollisionCircleRec(ballPos, ballRadius, RectanglePosToRectangle(rectangleLeftPos, rectangleWidth, rectangleHeight)) ||
-                 CheckCollisionCircleRec(ballPos, ballRadius, RectanglePosToRectangle(rectangleRightPos, rectangleWidth, rectangleHeight)))
+
+        // Ball collision with paddles
+        if (CheckCollisionCircleRec(ballPos, ballRadius, RectanglePosToRectangle(rectangleLeftPos, rectangleWidth, rectangleHeight)) ||
+            CheckCollisionCircleRec(ballPos, ballRadius, RectanglePosToRectangle(rectangleRightPos, rectangleWidth, rectangleHeight)))
         {
             ballVelocity.x = -ballVelocity.x;
         }
 
+        // Draw paddles
         DrawRectangle(rectangleLeftPos.x, rectangleLeftPos.y, rectangleWidth, rectangleHeight, rectangleColor);
-
-        DrawCircle(ballPos.x, ballPos.y, ballRadius, ballColor);
-
         DrawRectangle(rectangleRightPos.x, rectangleRightPos.y, rectangleWidth, rectangleHeight, rectangleColor);
 
+        // Draw ball
+        DrawCircle(ballPos.x, ballPos.y, ballRadius, ballColor);
+
+        // Draw scores
         sprintf(leftPlayerScoreText, "Score: %d", leftPlayerScore);
         DrawText(leftPlayerScoreText, leftPlayerScorePos.x, leftPlayerScorePos.y, fontSizeScore, textColor);
-
         sprintf(rightPlayerScoreText, "Score: %d", rightPlayerScore);
-
         DrawText(rightPlayerScoreText, rightPlayerScorePos.x - MeasureText(rightPlayerScoreText, fontSizeScore), rightPlayerScorePos.y, fontSizeScore, textColor);
 
+        // Draw winner text
         if (winner)
         {
             sprintf(winnerText, "Player %d won!", winner);
-            int winnerTextSize;
-
             DrawText(winnerText, screenWidthCenter - (MeasureText(winnerText, fontSizeWinner) / 2), paddingYWinner, fontSizeWinner, winnerColor);
         }
 
+        // Draw spacebar text if game not started
         if (!didGameStart)
         {
             DrawText(spacebarText, screenWidthCenter - (MeasureText(spacebarText, fontSizeSpacebar) / 2), paddingYSpacebar, fontSizeSpacebar, textColor);
@@ -180,6 +181,5 @@ int main(void)
     }
 
     CloseWindow();
-
     return 0;
 }
