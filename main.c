@@ -148,7 +148,16 @@ int main(void)
         if (CheckCollisionCircleRec(ballPos, ballRadius, RectanglePosToRectangle(rectangleLeftPos, rectangleWidth, rectangleHeight)) ||
             CheckCollisionCircleRec(ballPos, ballRadius, RectanglePosToRectangle(rectangleRightPos, rectangleWidth, rectangleHeight)))
         {
-            ballVelocity.x = -ballVelocity.x;
+            // Determine where the collision occurred and adjust velocity accordingly
+            if (ballPos.y >= rectangleLeftPos.y && ballPos.y <= rectangleLeftPos.y + rectangleHeight ||
+                ballPos.y >= rectangleRightPos.y && ballPos.y <= rectangleRightPos.y + rectangleHeight)
+            {
+                ballVelocity.x = -ballVelocity.x;
+            }
+            else
+            {
+                ballVelocity.y = -ballVelocity.y;
+            }
         }
 
         // Draw paddles
